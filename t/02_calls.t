@@ -1,67 +1,39 @@
 use strict;
-use Test::More tests => 10;
+use Test::More tests => 8;
 
 my $m;
 
 BEGIN {
-    use_ok( $m = 'Sphinx::XMLpipe2' );
+    use_ok( $m = 'Template::Plugin::Filter::Scss' );
 }
 
-ok(!$m->new(), 'reject empty args for new() is ok');
+can_ok('Template::Plugin::Filter::Scss', 'init');
+can_ok('Template::Plugin::Filter::Scss', 'filter');
 
-my $sxml;
+my $out = '';
+my $input = 'Hello!';
+my $parser;
 eval {
-    $sxml = $m->new(
-        fields => [qw(author title content)],
-        attrs  => {published => 'timestamp',}
-    );
+    use Template;
+    $parser = Template->new({
+        OUTPUT => \$out,
+        TRIM => 1,
+    });
 };
+ok($parser, 'new Template object is ok');
+ok($parser->process(\$input), 'Template process method is ok');
+ok($input eq $out, 'Simple output correct');
 
-ok($sxml, 'new object is ok');
+$out = '';
+$input = q~[% USE Filter.Scss output_style => 'compressed' %]
+    [% FILTER scss %]
+        .col305 {
+            position: relative;
+        }
+    [% END %]
+~;
 
-my $add;
-eval {
-    $add = {
-        id         => 314159265,
-        author     => 'Oscar Wilde',
-        title      => 'Illusion is the first of all pleasures',
-        content    => 'Man is least himself when he talks in his own person. Give him a mask, and he will tell you the truth.',
-        published  => 1234567890,
-    };
-};
-
-ok(!$sxml->add_data(), 'reject add_data method with bad args is ok');
-ok($sxml->add_data($add), 'add_data method is ok');
-ok(!$sxml->remove_data(), 'reject remove_data method with bad args is ok');
-ok($sxml->remove_data({id => 27182818}), 'remove_data method is ok');
-ok($sxml->fetch(), 'fetch method is ok');
-
-eval {
-    $sxml = $m->new(
-        fields => [qw(author title content)],
-        attrs  => [
-            {
-                name => 'published',
-                type => 'timestamp',
-            },
-            {
-                name    => 'section',
-                type    => 'int',
-                bits    => 8,
-                default => 1,
-            },
-        ]
-    );
-};
-
-ok($sxml, 'new object with attrs_array is ok');
-
-eval {
-    $sxml = $m->new(
-        fields => [qw(author title content)],
-    );
-};
-
-ok($sxml, 'new object with fields_only is ok');
+ok($parser->process(\$input), 'Template process method with filter is ok');
+ok($out eq '.col305{position:relative}', 'Test-filter output correct');
 
 done_testing();
