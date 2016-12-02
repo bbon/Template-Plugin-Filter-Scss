@@ -104,6 +104,8 @@ The default is 'NESTED'.
 
 CSS::Sass - Compile .scss files using libsass L<http://search.cpan.org/~ocbnet/CSS-Sass/lib/CSS/Sass.pm>
 
+Compass-mixins for libsass L<https://github.com/Igosuki/compass-mixins>
+
 =head1 LICENSE
 
 Copyright (C) bbon.
